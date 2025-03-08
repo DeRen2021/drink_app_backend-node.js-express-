@@ -4,5 +4,7 @@ logs/
 
 coverage/
 
-.evn
+.env
 .env.test
+
+run_note.txt

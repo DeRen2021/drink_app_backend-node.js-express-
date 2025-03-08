@@ -1,5 +1,7 @@
 const UserCocktail = require('../models/userCocktail');
 const logger = require('../utils/logger');
+const {formatCocktails, formatCocktail} = require('../views/formatters');
+const { wrapResponse } = require('../views/responseWrapper');
 
 /**
  * 获取用户可以制作的鸡尾酒
@@ -19,13 +21,13 @@ const getUserCocktails = async (req, res) => {
     const userCocktails = await UserCocktail.getUserCocktails(userId);
     
     logger.info(`[${requestId}] 成功获取用户(ID: ${userId})可制作的鸡尾酒，共 ${userCocktails.length} 款`);
+
+    //format result
+    const formattedUserCocktails = formatCocktails(userCocktails)
     
     // 返回成功响应
-    return res.status(200).json({
-      success: true,
-      count: userCocktails.length,
-      data: userCocktails
-    });
+    return res.status(200).json(wrapResponse(formattedUserCocktails));
+    
   } catch (error) {
     logger.error(`[${requestId}] 获取用户鸡尾酒失败，用户ID: ${req.user.id}`, {
       error: error.message,

@@ -1,5 +1,7 @@
 const liquorModel = require('../models/liquor');
 const logger = require('../utils/logger');
+const { formatLiquors, formatLiquor } = require('../views/formatters');
+const { wrapResponse } = require('../views/responseWrapper');
 
 // 获取所有酒类
 exports.getAllLiquors = async (req, res) => {
@@ -9,11 +11,10 @@ exports.getAllLiquors = async (req, res) => {
     const liquors = await liquorModel.getAllLiquors();
     
     logger.info(`[${requestId}] 成功获取所有酒类，共 ${liquors.length} 条记录`);
-    res.status(200).json({
-      success: true,
-      count: liquors.length,
-      data: liquors
-    });
+
+    // format result
+    const formattedLiquors = formatLiquors(liquors);
+    res.status(200).json(wrapResponse(formattedLiquors));
   } catch (error) {
     logger.error(`[${requestId}] 获取所有酒类失败: ${error.message}`, {
       error: error.stack
@@ -35,7 +36,6 @@ exports.getLiquorById = async (req, res) => {
     logger.debug(`[${requestId}] 开始获取ID为${id}的酒类`);
     
     const liquor = await liquorModel.getLiquorById(id);
-    
     if (!liquor) {
       logger.warn(`[${requestId}] 未找到ID为${id}的酒类`);
       return res.status(404).json({
@@ -45,10 +45,9 @@ exports.getLiquorById = async (req, res) => {
     }
 
     logger.info(`[${requestId}] 成功获取ID为${id}的酒类: ${liquor.name}`);
-    res.status(200).json({
-      success: true,
-      data: liquor
-    });
+    const formattedLiquor = formatLiquor(liquor);
+    res.status(200).json(wrapResponse(formattedLiquor));
+    
   } catch (error) {
     logger.error(`[${requestId}] 获取ID为${req.params.id}的酒类失败: ${error.message}`, {
       error: error.stack

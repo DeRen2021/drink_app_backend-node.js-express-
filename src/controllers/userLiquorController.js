@@ -1,7 +1,8 @@
 const Liquor = require('../models/liquor');
 const UserLiquor = require('../models/userLiquor');
-const UserCocktail = require('../models/userCocktail');
 const logger = require('../utils/logger');
+const { formatLiquors, formatLiquor } = require('../views/formatters');
+const { wrapResponse } = require('../views/responseWrapper');
 
 /**
  * 获取用户酒柜中的所有酒品
@@ -17,12 +18,11 @@ const getUserLiquors = async (req, res) => {
     // 获取用户酒柜中的所有酒品
     const userLiquors = await UserLiquor.getUserLiquors(userId);
     logger.info(`用户ID ${userId} 获取酒柜中的所有酒品成功，共 ${userLiquors ? userLiquors.length : 0} 条记录`);
+    // format result
+    const formattedUserLiquors = formatLiquors(userLiquors);
     // 返回成功响应
-    return res.status(200).json({
-      success: true,
-      count: userLiquors.length,
-      data: userLiquors
-    });
+    return res.status(200).json(wrapResponse(formattedUserLiquors));
+    
   } catch (error) {
     logger.error(`获取用户酒柜失败: ${error.message}`);
     console.error('获取用户酒柜失败:', error);

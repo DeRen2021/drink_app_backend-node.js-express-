@@ -1,5 +1,7 @@
 const cocktailModel = require('../models/cocktail');
 const logger = require('../utils/logger');
+const {formatCocktails, formatCocktail} = require('../views/formatters');
+const { wrapResponse } = require('../views/responseWrapper');
 
 
 exports.getAllCocktails = async (req, res) => {
@@ -9,11 +11,11 @@ exports.getAllCocktails = async (req, res) => {
     const cocktails = await cocktailModel.getAllCocktails();
     
     logger.info(`[${requestId}] 获取所有鸡尾酒成功，共 ${cocktails.length} 条记录`);
-    res.status(200).json({
-      success: true,
-      count: cocktails.length,
-      data: cocktails
-    });
+
+    // format result
+    const fromatCT = formatCocktails(cocktails)
+    res.status(200).json(wrapResponse(fromatCT));
+
   } catch (error) {
     logger.error(`[${requestId}] 获取所有鸡尾酒失败: ${error.message}`, {
       error: error.stack
@@ -48,12 +50,11 @@ exports.getAvailableCocktails = async (req, res) => {
     // 获取可用鸡尾酒
     const availableCocktails = await cocktailModel.getAvailableCocktails(liquorIds);
 
+    // format result
+    const fromatACT = formatCocktails(availableCocktails)
+
     logger.info(`[${requestId}] 成功获取用户可制作的鸡尾酒，共 ${availableCocktails.length} 款`);
-    res.status(200).json({
-      success: true,
-      count: availableCocktails.length,
-      data: availableCocktails
-    });
+    res.status(200).json(wrapResponse(fromatACT));
   } catch (error) {
     logger.error(`[${requestId}] 获取用户可制作的鸡尾酒失败: ${error.message}`, {
       error: error.stack

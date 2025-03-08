@@ -61,7 +61,7 @@ describe('userCocktail API测试', () => {
                 .set('Authorization', `Bearer ${testToken}`)
                 .expect(200);
             
-            console.log('res1.body:\n', res1.body);
+            console.log('res22.body:\n', res1.body);
             
             // 获取用户鸡尾酒
             const res2 = await request(app)
@@ -70,13 +70,13 @@ describe('userCocktail API测试', () => {
                 .expect('Content-Type', /json/)
                 .expect(200);
             
-            console.log('res2.body:\n', res2.body);
+            console.log('res22.body:\n', res2.body);
             console.log('ingredient_name:\n', res2.body.data[0].ingredients);
             
             expect(res2.body.success).toBe(true);
             expect(Array.isArray(res2.body.data)).toBe(true);
             expect(res2.body.data.length).toBe(1);
-            expect(res2.body.data[0].cocktail_id).toBe(testCocktailID);
+            expect(res2.body.data[0].id).toBe(testCocktailID);
             // 检查是否有鸡尾酒（具体数量取决于测试数据库中的数据）
         });
 
@@ -95,7 +95,7 @@ describe('userCocktail API测试', () => {
                 .set('Authorization', `Bearer ${testToken}`)
                 .expect(200);
             
-            console.log('res1.body:\n', res1.body);
+            console.log('res23.body:\n', res1.body);
             
             // 获取用户鸡尾酒
             const res2 = await request(app)
@@ -104,15 +104,15 @@ describe('userCocktail API测试', () => {
                 .expect('Content-Type', /json/)
                 .expect(200);
             
-            console.log('res2.body:\n', res2.body);
+            console.log('res23.body:\n', res2.body);
             
             expect(res2.body.success).toBe(true);
             expect(Array.isArray(res2.body.data)).toBe(true);
             expect(res2.body.data.length).toBe(2);
 
             //modify this logic later depend on list ordering
-            expect(res2.body.data[0].cocktail_id).toBe(testCocktailID2);
-            expect(res2.body.data[1].cocktail_id).toBe(testCocktailID);
+            expect(res2.body.data[0].id).toBe(testCocktailID2);
+            expect(res2.body.data[1].id).toBe(testCocktailID);
             // 检查是否有鸡尾酒（具体数量取决于测试数据库中的数据）
         });
     });

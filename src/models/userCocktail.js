@@ -17,15 +17,27 @@ const UserCocktail = {
     // 获取每个鸡尾酒的配料
     for (const cocktail of cocktails) {
       const ingredients = await executeQuery(
-        `SELECT liquor_name, amount 
+        `SELECT liquor_name, amount
          FROM cocktail_ingredients 
          WHERE cocktail_id = ?`,
+        [cocktail.cocktail_id]
+      );
+
+      const name_instruction_uri = await executeQuery(
+        `SELECT cocktail_name, instructions, image_url FROM cocktails WHERE id = ?`,
         [cocktail.cocktail_id]
       );
       
       cocktail.ingredients = ingredients.map(i => 
         `${i.amount} oz ${i.liquor_name}`
       );
+
+      cocktail.image_url = name_instruction_uri[0].image_url;
+      cocktail.cocktail_name = name_instruction_uri[0].cocktail_name;
+      cocktail.instructions = name_instruction_uri[0].instructions;
+
+      cocktail.id = cocktail.cocktail_id;
+
     }
     
     return cocktails;
