@@ -1,0 +1,26 @@
+临时测试
+cloudflared tunnel --url http://localhost:3000
+
+https://dylan-lectures-sr-fraud.trycloudflare.com  
+
+curl https://dylan-lectures-sr-fraud.trycloudflare.com/api/cocktails/
+
+feiwang@feiwangdeMacBook-Pro drink_app_backend %    lsof -i :3000
+COMMAND   PID    USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+node    71363 feiwang   19u  IPv6 0xbd00cab2320fd621      0t0  TCP *:hbci (LISTEN)
+feiwang@feiwangdeMacBook-Pro drink_app_backend % kill -9 71363
+feiwang@feiwangdeMacBook-Pro drink_app_backend %    lsof -i :3000
+
+kill -9 $(lsof -ti :3000)
+
+
+
+#test
+npx jest tests/integration/api/userLiquor.test.js
+
+
+npx jest tests/integration/api/userLiquor.test.js --verbose
+npx jest tests/integration/api/userLiquor.test.js --verbose
+
+npx jest tests/integration/api/userLiquor.test.js --no-coverage
+npx jest tests/integration/api/userCocktail.test.js --no-coverage

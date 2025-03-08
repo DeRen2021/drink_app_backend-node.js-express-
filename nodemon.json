@@ -1,0 +1,16 @@
+{
+  "watch": ["src"],
+  "ext": "js,json",
+  "ignore": ["src/**/*.spec.js", "node_modules"],
+  "delay": "500",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "execMap": {
+    "js": "node"
+  },
+  "events": {
+    "restart": "echo \"应用已重启\" && date"
+  },
+  "restartable": "rs"
+} 
