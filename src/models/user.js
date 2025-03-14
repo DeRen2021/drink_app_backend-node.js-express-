@@ -110,7 +110,33 @@ const User = {
    */
   verifyPassword: async (plainPassword, hashedPassword) => {
     return await bcrypt.compare(plainPassword, hashedPassword);
+  },
+
+  /**
+   * 注销（删除）用户账户
+   * @param {number} userId - 用户ID
+   * @returns {Promise<boolean>} - 返回是否成功删除账户
+   */
+  deleteAccount: async (userId) => {
+    try {
+      const result = await executeQuery(
+        'DELETE FROM users WHERE id = ?',
+        [userId]
+      );
+      
+      // 检查删除操作是否成功
+      if (!result || result.affectedRows === 0) {
+        console.log('删除用户数据失败:', result);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('注销账户时发生错误:', error);
+      return false;
+    }
   }
+
 };
 
 module.exports = User; 

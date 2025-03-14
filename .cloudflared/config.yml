@@ -1,0 +1,7 @@
+tunnel: 266281aa-5d7b-4776-9ae1-799902ffcb11
+credentials-file: /Users/<your-username>/.cloudflared/<YOUR_TUNNEL_ID>.json
+
+ingress:
+  - hostname: drink-backend-1.deren.life
+    service: http://localhost:3000  # Change to your local app
+  - service: http_status:404

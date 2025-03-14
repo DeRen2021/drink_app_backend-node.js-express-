@@ -184,8 +184,50 @@ const getMe = async (req, res) => {
   }
 };
 
+/**
+ * 用户注销账户控制器
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @returns {Object} - 返回响应对象
+ */
+const deleteAccount = async (req, res) => {
+  const requestId = req.requestId || 'unknown';
+  try {
+    logger.info(`[${requestId}] 收到用户注销账户请求: ${req.user.id}`);
+    
+    // 确认用户身份 - 这里假设req.user是由认证中间件设置的当前登录用户
+    const userId = req.user.id;
+    
+    // 调用用户模型的deleteAccount方法执行注销
+    logger.debug(`[${requestId}] 开始删除用户账户: ${userId}`);
+    const isDeleted = await User.deleteAccount(userId);
+    
+    if (!isDeleted) {
+      logger.warn(`[${requestId}] 注销账户失败，用户ID: ${userId}`);
+      return res.status(400).json({
+        success: false,
+        message: '注销账户失败，请稍后重试'
+      });
+    }
+    
+    // 返回成功响应
+    logger.info(`[${requestId}] 用户注销账户成功: ${req.user.username}, ID: ${userId}`);
+    return res.status(200).json({
+      success: true,
+      message: '账户已成功注销'
+    });
+  } catch (error) {
+    logger.error(`[${requestId}] 用户注销账户失败:`, { error: error.message, stack: error.stack });
+    return res.status(500).json({
+      success: false,
+      message: '注销账户失败，服务器内部错误'
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
-  getMe
+  getMe,
+  deleteAccount
 }; 
