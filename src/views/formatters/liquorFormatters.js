@@ -11,8 +11,9 @@ const formatLiquor = (liquor, isUserLiquor = false) => {
   const formatted = {
     id: liquor.id,
     name: liquor.liquor_name,
-    category: liquor.category || '',
+    //category: liquor.category || '',
     imageUrl: liquor.image_url || '',
+    type: liquor.type_name || '',
   };
   
   // 用户特有字段
