@@ -171,6 +171,85 @@ const addLiquorToUserCabinet = async (req, res) => {
 };
 
 /**
+ * 根据酒名添加酒品到用户酒柜
+ * @param {Object} req - Express请求对象
+ * @param {Object} res - Express响应对象
+ * @returns {Object} - 返回响应对象
+ */
+const addLiquorToUserCabinetByName = async (req, res) => {
+  try {
+    // 从认证中间件获取用户ID
+    const userId = req.user.id;
+    const requestId = req.requestId || 'unknown';
+    
+    logger.debug(`[${requestId}] 开始处理根据酒名将酒品添加到用户酒柜的请求，用户ID: ${userId}`);
+    
+    // 从请求体获取酒品名称
+    const { liquorName } = req.body;
+    
+    // 验证请求
+    if (!liquorName) {
+      logger.warn(`[${requestId}] 无效请求: 缺少酒品名称, 用户ID: ${userId}`);
+      return res.status(400).json({
+        success: false,
+        message: '请提供酒品名称'
+      });
+    }
+    
+    logger.debug(`[${requestId}] 正在根据名称"${liquorName}"查询酒品`);
+    
+    // 根据名称查找酒品
+    const liquor = await Liquor.getLiquorByName(liquorName);
+    if (!liquor) {
+      logger.warn(`[${requestId}] 未找到指定名称的酒品: ${liquorName}, 用户ID: ${userId}`);
+      return res.status(404).json({
+        success: false,
+        message: `未找到名称为"${liquorName}"的酒品`
+      });
+    }
+    
+    logger.debug(`[${requestId}] 找到酒品: ${liquor.liquor_name}, ID: ${liquor.id}, 准备添加到用户酒柜`);
+    
+    // 添加酒品到用户酒柜
+    const success = await UserLiquor.addLiquorToUserCabinet(userId, liquor.id);
+    
+    if (!success) {
+      logger.error(`[${requestId}] 数据库操作失败: 无法添加酒品到用户酒柜, 用户ID: ${userId}, 酒品ID: ${liquor.id}`);
+      return res.status(500).json({
+        success: false,
+        message: '添加酒品到用户酒柜失败'
+      });
+    }
+    
+    logger.info(`[${requestId}] 用户(ID: ${userId})成功将酒品(${liquor.liquor_name}, ID: ${liquor.id})添加到酒柜`);
+    
+    // 返回成功响应
+    return res.status(200).json({
+      success: true,
+      message: '酒品已成功添加到您的酒柜',
+      data: {
+        liquor: liquor
+      }
+    });
+  } catch (error) {
+    const requestId = req.requestId || 'unknown';
+    const userId = req.user ? req.user.id : 'unknown';
+    
+    logger.error(`[${requestId}] 根据酒名添加酒品到用户酒柜失败, 用户ID: ${userId}`, {
+      error: {
+        message: error.message,
+        stack: error.stack
+      }
+    });
+    
+    return res.status(500).json({
+      success: false,
+      message: '添加酒品到用户酒柜失败，服务器内部错误'
+    });
+  }
+};
+
+/**
  * 从用户酒柜中移除酒品
  * @param {Object} req - Express请求对象
  * @param {Object} res - Express响应对象
@@ -292,6 +371,7 @@ module.exports = {
   getUserLiquors,
   getAllLiquorsWithUserStatus,
   addLiquorToUserCabinet,
+  addLiquorToUserCabinetByName,
   removeLiquorFromUserCabinet,
   searchLiquorsWithUserStatus
 }; 

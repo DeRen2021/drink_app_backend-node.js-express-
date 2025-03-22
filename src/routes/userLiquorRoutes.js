@@ -4,6 +4,7 @@ const {
   getUserLiquors,
   getAllLiquorsWithUserStatus,
   addLiquorToUserCabinet,
+  addLiquorToUserCabinetByName,
   removeLiquorFromUserCabinet,
   searchLiquorsWithUserStatus
 } = require('../controllers/userLiquorController');
@@ -24,6 +25,9 @@ router.get('/search', searchLiquorsWithUserStatus);
 
 // 添加酒品到用户酒柜
 router.post('/cabinet/add', addLiquorToUserCabinet);
+
+// 根据酒名添加酒品到用户酒柜
+router.post('/cabinet/add-by-name', addLiquorToUserCabinetByName);
 
 // 从用户酒柜中移除酒品
 router.post('/cabinet/remove', removeLiquorFromUserCabinet);

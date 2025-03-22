@@ -59,4 +59,76 @@ exports.getLiquorById = async (req, res) => {
       error: error.message
     });
   }
+};
+
+// 根据名称获取酒类
+exports.getLiquorByName = async (req, res) => {
+  const requestId = req.requestId || 'unknown';
+  try {
+    const name = req.params.name;
+    logger.debug(`[${requestId}] 开始根据名称"${name}"查询酒类`);
+    
+    const liquor = await liquorModel.getLiquorByName(name);
+    if (!liquor) {
+      logger.warn(`[${requestId}] 未找到名称为"${name}"的酒类`);
+      return res.status(404).json({
+        success: false,
+        message: `未找到名称为"${name}"的酒类`
+      });
+    }
+
+    logger.info(`[${requestId}] 成功根据名称"${name}"找到酒类: ID=${liquor.id}`);
+    const formattedLiquor = formatLiquor(liquor);
+    res.status(200).json(wrapResponse(formattedLiquor));
+    
+  } catch (error) {
+    logger.error(`[${requestId}] 根据名称"${req.params.name}"查询酒类失败: ${error.message}`, {
+      error: error.stack
+    });
+    
+    res.status(500).json({
+      success: false,
+      message: '服务器错误',
+      error: error.message
+    });
+  }
+};
+
+// 根据名称获取酒类ID
+exports.getLiquorIdByName = async (req, res) => {
+  const requestId = req.requestId || 'unknown';
+  try {
+    const name = req.params.name;
+    logger.debug(`[${requestId}] 开始根据名称"${name}"查询酒类ID`);
+    
+    const liquor = await liquorModel.getLiquorByName(name);
+    if (!liquor) {
+      logger.warn(`[${requestId}] 未找到名称为"${name}"的酒类`);
+      return res.status(404).json({
+        success: false,
+        message: `未找到名称为"${name}"的酒类`
+      });
+    }
+
+    logger.info(`[${requestId}] 成功根据名称"${name}"找到酒类ID: ${liquor.id}`);
+    
+    // 只返回ID
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: liquor.id
+      }
+    });
+    
+  } catch (error) {
+    logger.error(`[${requestId}] 根据名称"${req.params.name}"查询酒类ID失败: ${error.message}`, {
+      error: error.stack
+    });
+    
+    return res.status(500).json({
+      success: false,
+      message: '服务器错误',
+      error: error.message
+    });
+  }
 }; 
