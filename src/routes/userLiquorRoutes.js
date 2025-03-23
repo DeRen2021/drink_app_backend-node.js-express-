@@ -24,12 +24,12 @@ router.get('/all', getAllLiquorsWithUserStatus);
 router.get('/search', searchLiquorsWithUserStatus);
 
 // 添加酒品到用户酒柜
-router.post('/cabinet/add', addLiquorToUserCabinet);
+router.post('/cabinet', addLiquorToUserCabinet);
 
 // 根据酒名添加酒品到用户酒柜
-router.post('/cabinet/add-by-name', addLiquorToUserCabinetByName);
+router.post('/cabinet/by-name', addLiquorToUserCabinetByName);
 
 // 从用户酒柜中移除酒品
-router.post('/cabinet/remove', removeLiquorFromUserCabinet);
+router.delete('/cabinet/:liquorId', removeLiquorFromUserCabinet);
 
 module.exports = router; 

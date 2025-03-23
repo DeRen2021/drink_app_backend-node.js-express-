@@ -1,6 +1,10 @@
 const { pool, executeQuery } = require('../config/db');
 
 class LiquorModel {
+  /**
+   * 获取所有酒类
+   * @returns {Array} - 酒类数组
+   */
   async getAllLiquors() {
     try {
       const rows = await executeQuery(`
@@ -16,7 +20,11 @@ class LiquorModel {
     }
   }
 
-  // 根据ID获取酒类
+  /**
+   * 根据ID获取酒类
+   * @param {Number} id - 酒类ID
+   * @returns {Object|null} - 酒类对象或null
+   */
   async getLiquorById(id) {
     try {
       const rows = await executeQuery(`
@@ -32,7 +40,11 @@ class LiquorModel {
     }
   }
 
-  // 根据名称获取酒类
+  /**
+   * 根据名称精确获取酒类
+   * @param {String} name - 酒类名称
+   * @returns {Object|null} - 酒类对象或null
+   */
   async getLiquorByName(name) {
     try {
       const rows = await executeQuery(`
@@ -49,7 +61,11 @@ class LiquorModel {
     }
   }
 
-  // 根据类型ID获取酒类
+  /**
+   * 根据类型ID获取酒类
+   * @param {Number} typeId - 类型ID
+   * @returns {Array} - 酒类数组
+   */
   async getLiquorsByTypeId(typeId) {
     try {
       const rows = await executeQuery(`
@@ -66,7 +82,10 @@ class LiquorModel {
     }
   }
 
-  // 获取所有酒类类型
+  /**
+   * 获取所有酒类类型
+   * @returns {Array} - 类型数组
+   */
   async getAllLiquorTypes() {
     try {
       const rows = await executeQuery('SELECT * FROM ingredient_types ORDER BY type_name');

@@ -3,7 +3,10 @@ const logger = require('../utils/logger');
 const { formatLiquors, formatLiquor } = require('../views/formatters');
 const { wrapResponse } = require('../views/responseWrapper');
 
-// 获取所有酒类
+/**
+ * 获取所有酒类
+ * GET /api/liquors
+ */
 exports.getAllLiquors = async (req, res) => {
   const requestId = req.requestId || 'unknown';
   try {
@@ -22,13 +25,18 @@ exports.getAllLiquors = async (req, res) => {
     
     res.status(500).json({
       success: false,
-      message: '服务器错误',
-      error: error.message
+      error: {
+        code: 'internal_server_error',
+        message: '服务器错误'
+      }
     });
   }
 };
 
-// 获取单个酒类
+/**
+ * 获取单个酒类
+ * GET /api/liquors/:id
+ */
 exports.getLiquorById = async (req, res) => {
   const requestId = req.requestId || 'unknown';
   try {
@@ -40,11 +48,14 @@ exports.getLiquorById = async (req, res) => {
       logger.warn(`[${requestId}] 未找到ID为${id}的酒类`);
       return res.status(404).json({
         success: false,
-        message: `未找到ID为${id}的酒类`
+        error: {
+          code: 'resource_not_found',
+          message: `未找到ID为${id}的酒类`
+        }
       });
     }
 
-    logger.info(`[${requestId}] 成功获取ID为${id}的酒类: ${liquor.name}`);
+    logger.info(`[${requestId}] 成功获取ID为${id}的酒类: ${liquor.liquor_name}`);
     const formattedLiquor = formatLiquor(liquor);
     res.status(200).json(wrapResponse(formattedLiquor));
     
@@ -55,28 +66,38 @@ exports.getLiquorById = async (req, res) => {
     
     res.status(500).json({
       success: false,
-      message: '服务器错误',
-      error: error.message
+      error: {
+        code: 'internal_server_error',
+        message: '服务器错误'
+      }
     });
   }
 };
 
-// 根据名称获取酒类
+/**
+ * 根据名称精确获取酒类
+ * GET /api/liquors/name/:name
+ */
 exports.getLiquorByName = async (req, res) => {
   const requestId = req.requestId || 'unknown';
   try {
     const name = req.params.name;
-    logger.debug(`[${requestId}] 开始根据名称"${name}"查询酒类`);
+    
+    logger.debug(`[${requestId}] 开始根据名称"${name}"精确查询酒类`);
     
     const liquor = await liquorModel.getLiquorByName(name);
+    
     if (!liquor) {
       logger.warn(`[${requestId}] 未找到名称为"${name}"的酒类`);
       return res.status(404).json({
         success: false,
-        message: `未找到名称为"${name}"的酒类`
+        error: {
+          code: 'resource_not_found',
+          message: `未找到名称为"${name}"的酒类`
+        }
       });
     }
-
+    
     logger.info(`[${requestId}] 成功根据名称"${name}"找到酒类: ID=${liquor.id}`);
     const formattedLiquor = formatLiquor(liquor);
     res.status(200).json(wrapResponse(formattedLiquor));
@@ -88,47 +109,42 @@ exports.getLiquorByName = async (req, res) => {
     
     res.status(500).json({
       success: false,
-      message: '服务器错误',
-      error: error.message
+      error: {
+        code: 'internal_server_error',
+        message: '服务器错误'
+      }
     });
   }
 };
 
-// 根据名称获取酒类ID
-exports.getLiquorIdByName = async (req, res) => {
+/**
+ * 获取所有酒类类型
+ * GET /api/liquors/types
+ */
+exports.getLiquorTypes = async (req, res) => {
   const requestId = req.requestId || 'unknown';
   try {
-    const name = req.params.name;
-    logger.debug(`[${requestId}] 开始根据名称"${name}"查询酒类ID`);
+    logger.debug(`[${requestId}] 开始获取所有酒类类型`);
     
-    const liquor = await liquorModel.getLiquorByName(name);
-    if (!liquor) {
-      logger.warn(`[${requestId}] 未找到名称为"${name}"的酒类`);
-      return res.status(404).json({
-        success: false,
-        message: `未找到名称为"${name}"的酒类`
-      });
-    }
-
-    logger.info(`[${requestId}] 成功根据名称"${name}"找到酒类ID: ${liquor.id}`);
+    const types = await liquorModel.getAllLiquorTypes();
     
-    // 只返回ID
-    return res.status(200).json({
-      success: true,
-      data: {
-        id: liquor.id
-      }
-    });
+    logger.info(`[${requestId}] 成功获取所有酒类类型，共 ${types.length} 种类型`);
+    res.status(200).json(wrapResponse(types));
     
   } catch (error) {
-    logger.error(`[${requestId}] 根据名称"${req.params.name}"查询酒类ID失败: ${error.message}`, {
+    logger.error(`[${requestId}] 获取所有酒类类型失败: ${error.message}`, {
       error: error.stack
     });
     
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: '服务器错误',
-      error: error.message
+      error: {
+        code: 'internal_server_error',
+        message: '服务器错误'
+      }
     });
   }
-}; 
+};
+
+
+

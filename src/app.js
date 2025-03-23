@@ -47,10 +47,13 @@ app.get('/', (req, res) => {
 
 // 处理404错误
 app.use((req, res) => {
-  logger.warn(`请求未找到: ${req.originalUrl}`);
+  logger.warn(`请求未找到: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     success: false,
-    message: '未找到请求的资源'
+    error: {
+      code: 'resource_not_found',
+      message: '未找到请求的资源'
+    }
   });
 });
 
@@ -59,11 +62,31 @@ app.use(errorLogger);
 
 // 全局错误处理
 app.use((err, req, res, next) => {
-  res.status(500).json({
+  const statusCode = err.statusCode || 500;
+  
+  // 构建错误响应
+  const errorResponse = {
     success: false,
-    message: '服务器内部错误',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
+    error: {
+      code: err.code || 'internal_server_error',
+      message: statusCode === 500 ? '服务器内部错误' : err.message
+    }
+  };
+  
+  // 仅在开发环境中包含错误详情和堆栈
+  if (process.env.NODE_ENV === 'development') {
+    errorResponse.error.detail = err.message;
+    errorResponse.error.stack = err.stack;
+  }
+  
+  // 记录详细错误信息
+  if (statusCode >= 500) {
+    logger.error(`服务器错误: ${err.message}`, { error: err.stack });
+  } else {
+    logger.warn(`客户端错误: ${err.message}`);
+  }
+  
+  res.status(statusCode).json(errorResponse);
 });
 
 // 导出app实例供测试使用

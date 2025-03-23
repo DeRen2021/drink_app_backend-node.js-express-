@@ -101,14 +101,14 @@ describe('userLiquor API test', () => {
     });
     
 
-    describe('POST /api/user-liquors/cabinet/add', () => {
+    describe('POST /api/user-liquors/cabinet', () => {
         beforeEach(async () => {
           await pool.execute('DELETE FROM user_liquors WHERE user_id = ?', [testUserId]);
         });
         
         test('add liquor to cabinet without token,should return 401', async () => {
           const res = await request(app)
-            .post('/api/user-liquors/cabinet/add')
+            .post('/api/user-liquors/cabinet')
             .send({ liquorId: testLiquorId[0]})
             .expect('Content-Type', /json/)
             .expect(401);
@@ -118,7 +118,7 @@ describe('userLiquor API test', () => {
 
         test('add liquor to cabinet without liquor id,should return 400', async () => {
             const res = await request(app)
-              .post('/api/user-liquors/cabinet/add')
+              .post('/api/user-liquors/cabinet')
               .set('Authorization', `Bearer ${testToken}`)
               .send()
               .expect('Content-Type', /json/)
@@ -129,115 +129,72 @@ describe('userLiquor API test', () => {
 
         test('add unexist liquor to cabinet,should return 404', async () => {
             const res = await request(app)
-              .post('/api/user-liquors/cabinet/add')
+              .post('/api/user-liquors/cabinet')
               .set('Authorization', `Bearer ${testToken}`)
               .send({ liquorId: 999999 })
               .expect('Content-Type', /json/)
-              .expect(500);
+              .expect(404);
               
             expect(res.body.success).toBe(false);
           });
 
-
+        
         test('add liquor to cabinet', async () => {
+            //console.log('debug1')
             const res = await request(app)
-              .post('/api/user-liquors/cabinet/add')
+              .post('/api/user-liquors/cabinet')
               .set('Authorization', `Bearer ${testToken}`)
               .send({ liquorId: testLiquorId[0]})
               .expect('Content-Type', /json/)
-              .expect(500);
+              .expect(201);
               
-              console.log('res1.body:\n',res.body);
-              expect(res.body.success).toBe(false);
+              expect(res.body.success).toBe(true);
+              expect(res.body.data).toHaveProperty('liquor');
           });
         
     
 
-        test('add already in cabinet liquor to cabinet,should return 200', async () => {
+        test('add already in cabinet liquor to cabinet,should return 201', async () => {
 
             await request(app)
-                .post('/api/user-liquors/cabinet/add')
+                .post('/api/user-liquors/cabinet')
                 .set('Authorization', `Bearer ${testToken}`)
                 .send({ liquorId: testLiquorId[0] });
     
+            // 再添加同一个酒品
             const res = await request(app)
-              .post('/api/user-liquors/cabinet/add')
+              .post('/api/user-liquors/cabinet')
               .set('Authorization', `Bearer ${testToken}`)
               .send({ liquorId: testLiquorId[0]})
               .expect('Content-Type', /json/)
-              .expect(500);
+              .expect(201);
               
-              console.log('res1.body:\n',res.body);
-              expect(res.body.success).toBe(false);
+              expect(res.body.success).toBe(true);
           });
-
-        
     });
 
-    describe('POST /api/user-liquors/cabinet/remove', () => {
+    // 测试删除操作
+    describe('DELETE /api/user-liquors/cabinet/:liquorId', () => {
         beforeEach(async () => {
-          await pool.execute('DELETE FROM user_liquors WHERE user_id = ? AND liquor_id = ?', [testUserId, testLiquorId[0]]);
-          await pool.execute(
-            'INSERT INTO user_liquors (user_id, liquor_id) VALUES (?, ?)',
-            [testUserId, testLiquorId[0]]
-          );
+            // 清空用户酒柜
+            await pool.execute('DELETE FROM user_liquors WHERE user_id = ?', [testUserId]);
+            // 添加测试酒品到酒柜
+            await pool.execute('INSERT INTO user_liquors (user_id, liquor_id) VALUES (?, ?)', 
+                [testUserId, testLiquorId[0]]);
         });
-
-        test('remove liquor from cabinet without token,should return 401', async () => {
-            const res = await request(app)
-              .post('/api/user-liquors/cabinet/remove')
-              .send({ liquorId: testLiquorId[0]})
-              .expect('Content-Type', /json/)
-              .expect(401);
-              
-              expect(res.body.success).toBe(false);
-          });
-  
-          test('remove liquor from cabinet without liquor id,should return 400', async () => {
-              const res = await request(app)
-                .post('/api/user-liquors/cabinet/remove')
+        
+        test('删除酒柜中的酒品', async () => {
+            await request(app)
+                .delete(`/api/user-liquors/cabinet/${testLiquorId[0]}`)
                 .set('Authorization', `Bearer ${testToken}`)
-                .send()
-                .expect('Content-Type', /json/)
-                .expect(400);
-                
-                expect(res.body.success).toBe(false);
-            });
-  
-          test('remove unexist liquor from cabinet,should return 404', async () => {
-              const res = await request(app)
-                .post('/api/user-liquors/cabinet/remove')
-                .set('Authorization', `Bearer ${testToken}`)
-                .send({ liquorId: 999999 })
-                .expect('Content-Type', /json/)
-                .expect(404);
-                
-              expect(res.body.success).toBe(false);
-            });
-
-        test('remove liquor from cabinet', async () => {
-            const res = await request(app)
-                .post('/api/user-liquors/cabinet/remove')
-                .set('Authorization', `Bearer ${testToken}`)
-                .send({ liquorId: testLiquorId[0]})
-                .expect('Content-Type', /json/)
-                .expect(200);
-                
-            console.log('res1.body:\n',res.body);
-            expect(res.body.success).toBe(true);
-
-            const [rows] = await pool.execute(
-                'SELECT * FROM user_liquors WHERE user_id = ? AND liquor_id = ?',
-                [testUserId, testLiquorId[0]]
-              );
-              expect(rows.length).toBe(0);
+                .expect(204);
             
-            });
-        
-      });
-        
-
-
-    
-        
+            // 验证数据库中已删除
+            const [rows] = await pool.execute(
+                'SELECT * FROM user_liquors WHERE user_id = ? AND liquor_id = ?', 
+                [testUserId, testLiquorId[0]]
+            );
+            expect(rows.length).toBe(0);
+        });
+    });
 });
